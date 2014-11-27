@@ -83,9 +83,6 @@ public class UI extends VBox implements EventHandler{
         this.setupMenu();        
         this.getChildren().add(mBar);
         this.getChildren().add(chatBox);
-        names.add("chatter1");
-        names.add("chatter3");
-        names.add("chatter2");
         names.add(0, "");
         if(names.size() > 1)
             Collections.sort(names);
