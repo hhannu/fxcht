@@ -14,7 +14,6 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -54,6 +53,9 @@ public class UI extends VBox implements EventHandler{
     private Button sendButton;       
     private Button dcButton;    
     
+    private ChatClient client;
+    private ChatServer server;
+    
     // Names to show on ListView
     ObservableList<String> names = FXCollections.observableArrayList();
     
@@ -69,15 +71,18 @@ public class UI extends VBox implements EventHandler{
         lw.setMinWidth(160);
         lw.setMaxWidth(160);
         lw.setEditable(false);
-        if(this.serverMode) {
+        if(this.serverMode) {            
             userBox.getChildren().add(lw);        
             dcButton = new Button("Disconnect"); 
             dcButton.setOnAction(this);
             userBox.getChildren().add(dcButton);         
             chatBox.getChildren().add(userBox);
+            client = null;
         }
-        else
-            chatBox.getChildren().add(lw);              
+        else {
+            chatBox.getChildren().add(lw);      
+            server = null;
+        }
         chatBox.getChildren().add(chat);        
         chatBox.setPadding(new Insets(5, 5, 5, 5));  
         this.setupMenu();        
@@ -109,6 +114,22 @@ public class UI extends VBox implements EventHandler{
         msgBox.setAlignment(Pos.CENTER);
         this.getChildren().add(msgBox);
     }  
+
+    public ChatClient getClient() {
+        return client;
+    }
+
+    public void setClient(ChatClient client) {
+        this.client = client;
+    }
+
+    public ChatServer getServer() {
+        return server;
+    }
+
+    public void setServer(ChatServer server) {
+        this.server = server;
+    }
     
     private void setupMenu() {
         mBar = new MenuBar();
@@ -160,7 +181,15 @@ public class UI extends VBox implements EventHandler{
     
     private void sendMessage(String msg) {
         message.setText("");
-        chat.appendText("\n" + userName + (selectedUser.equals("") ? ": " : "->" + selectedUser + ": ") + msg);
+        //chat.appendText("\n" + userName + (selectedUser.equals("") ? ": " : "->" + selectedUser + ": ") + msg);
         // TODO: send message        
+        ChatMessage cmsg = new ChatMessage();
+        cmsg.setSenderName(userName);
+        cmsg.setMessage(msg);
+        client.sendMessage(cmsg);
+    }
+    
+    public void setMessage(ChatMessage cmsg) {
+        chat.appendText("\n" + cmsg.getSenderName() + ": " + cmsg.getMessage());       
     }
 }

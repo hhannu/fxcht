@@ -20,7 +20,23 @@ public class FxCht extends Application {
     public void start(Stage primaryStage) {
         
         StackPane root = new StackPane();
-        UI ui = new UI(false);
+        boolean servermode = false;
+        UI ui = new UI(servermode);
+        
+        // Start Server
+        if(servermode) {
+            ChatServer server = new ChatServer(ui);
+            ui.setServer(server);
+        }
+        // Start Client
+        else {
+            ChatClient client = new ChatClient(ui);
+            client.connect("127.0.0.1", 3010);
+            ui.setClient(client);
+            Thread clientThread = new Thread(client);
+            clientThread.start();
+        }
+        
         root.getChildren().add(ui);
         
         Scene scene = new Scene(root);
