@@ -5,6 +5,7 @@
  */
 package fxcht;
 
+import java.util.Scanner;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
@@ -20,13 +21,25 @@ public class FxCht extends Application {
     public void start(Stage primaryStage) {
         
         StackPane root = new StackPane();
-        boolean servermode = false;
-        UI ui = new UI(servermode);
+        boolean servermode = true;
+        String userName = "BOFH";
         
+        // TODO: dialog to ask server/client mode, username, address, ...
+        
+//        System.out.print("UserName: ");
+//        
+//        Scanner sc = new Scanner(System.in);
+//        userName = sc.nextLine();
+        
+        UI ui = new UI(userName, servermode);
         // Start Server
         if(servermode) {
-            ChatServer server = new ChatServer(ui);
+            ChatServer server = new ChatServer(ui, 3010);
+            server.setUserName(userName);
             ui.setServer(server);
+            Thread serverThread = new Thread(server);
+            serverThread.setDaemon(true);
+            serverThread.start();
         }
         // Start Client
         else {
@@ -34,7 +47,13 @@ public class FxCht extends Application {
             client.connect("127.0.0.1", 3010);
             ui.setClient(client);
             Thread clientThread = new Thread(client);
+            clientThread.setDaemon(true);
             clientThread.start();
+            
+            StatusMessage sm = new StatusMessage();
+            sm.setLogInMessage(true);
+            sm.setSenderName(userName);
+            client.sendMessage(sm);
         }
         
         root.getChildren().add(ui);

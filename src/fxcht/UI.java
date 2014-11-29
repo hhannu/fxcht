@@ -5,6 +5,7 @@
  */
 package fxcht;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
@@ -52,16 +53,17 @@ public class UI extends VBox implements EventHandler{
     private Button closeButton;        
     private Button sendButton;       
     private Button dcButton;    
+    private Label statusBar;
     
     private ChatClient client;
     private ChatServer server;
     
     // Names to show on ListView
-    ObservableList<String> names = FXCollections.observableArrayList();
+    ObservableList<String> userNames;
     
-    public UI(boolean serverMode) {
+    public UI(String userName, boolean serverMode) {
+        this.userName = userName;
         this.serverMode = serverMode;
-        userName = "user";
         selectedIndex = 0;
         selectedUser = "";
         chat.setMinWidth(320);
@@ -70,13 +72,17 @@ public class UI extends VBox implements EventHandler{
         chat.setWrapText(true);
         lw.setMinWidth(160);
         lw.setMaxWidth(160);
-        lw.setEditable(false);
+        lw.setEditable(false);        
+        userNames = FXCollections.observableArrayList();
         if(this.serverMode) {            
             userBox.getChildren().add(lw);        
             dcButton = new Button("Disconnect"); 
             dcButton.setOnAction(this);
             userBox.getChildren().add(dcButton);         
-            chatBox.getChildren().add(userBox);
+            chatBox.getChildren().add(userBox);    
+            userNames.add(0, "");
+            userNames.add(userName);
+            lw.setItems(userNames); 
             client = null;
         }
         else {
@@ -88,10 +94,7 @@ public class UI extends VBox implements EventHandler{
         this.setupMenu();        
         this.getChildren().add(mBar);
         this.getChildren().add(chatBox);
-        names.add(0, "");
-        if(names.size() > 1)
-            Collections.sort(names);
-        lw.setItems(names);
+        
         // Add a listener to ListView to track the selected name.
         lw.getSelectionModel().selectedItemProperty().addListener(
             new ChangeListener<String>() {
@@ -99,7 +102,11 @@ public class UI extends VBox implements EventHandler{
                 public void changed(ObservableValue<? extends String> ov, 
                     String old_val, String new_val) {
                     selectedIndex = lw.getSelectionModel().getSelectedIndex();
-                    selectedUser = names.get(selectedIndex);
+                    selectedUser = userNames.get(selectedIndex);
+                    if(selectedUser.equals(userName)) {
+                        lw.getSelectionModel().select(0);
+                        selectedUser = "";
+                    }                       
             }
         });
         msgBox.setPadding(new Insets(10, 10, 10, 10));  
@@ -113,6 +120,9 @@ public class UI extends VBox implements EventHandler{
         msgBox.getChildren().add(sendButton);
         msgBox.setAlignment(Pos.CENTER);
         this.getChildren().add(msgBox);
+        statusBar = new Label("");
+        this.getChildren().add(statusBar);
+        
     }  
 
     public ChatClient getClient() {
@@ -170,7 +180,7 @@ public class UI extends VBox implements EventHandler{
         }
         else if(event.getSource().equals(dcButton)) {
             if(selectedIndex != 0) {
-                names.remove(selectedIndex);
+                userNames.remove(selectedIndex);
                 selectedIndex = 0;
                 selectedUser = "";
                 lw.getSelectionModel().select(selectedIndex);
@@ -181,15 +191,63 @@ public class UI extends VBox implements EventHandler{
     
     private void sendMessage(String msg) {
         message.setText("");
-        //chat.appendText("\n" + userName + (selectedUser.equals("") ? ": " : "->" + selectedUser + ": ") + msg);
-        // TODO: send message        
+        if(!selectedUser.equals(""))
+            chat.appendText("\n" + userName + "->" + selectedUser + ": " + msg);
+               
         ChatMessage cmsg = new ChatMessage();
         cmsg.setSenderName(userName);
+        cmsg.setReceiverName(selectedUser);
         cmsg.setMessage(msg);
-        client.sendMessage(cmsg);
+        if(serverMode){
+            if(cmsg.getReceiverName().equals(""))
+                server.broadcastMessage(cmsg, 0);
+            else
+                server.sendTo(cmsg);
+        }
+        else
+            client.sendMessage(cmsg);
     }
     
     public void setMessage(ChatMessage cmsg) {
-        chat.appendText("\n" + cmsg.getSenderName() + ": " + cmsg.getMessage());       
+        chat.appendText("\n" + cmsg.getSenderName() +
+                (cmsg.getReceiverName().equals("") ? "" : "->" + cmsg.getReceiverName()) +
+                ": " + cmsg.getMessage());       
+    }
+    
+    public void setUserNames(ArrayList<String> names) {
+        userNames.clear();        
+        userNames.add(0, "");
+        for(String name : names) { 
+            userNames.add(name);              
+            //sortUserNames();
+        }
+        lw.setItems(userNames); 
+    }
+    
+    public void addUserName(String name) {
+        userNames.add(name);  
+        chat.appendText("\n" + name + " has joined the chat.");
+        //sortUserNames();  
+    }
+    
+    public void removeUserName(String name) {
+        userNames.remove(name);  
+        chat.appendText("\n" + name + " has left the chat.");
+        //sortUserNames();  
+    }
+    
+    private void sortUserNames() {
+        if(userNames.size() > 2)
+            Collections.sort(userNames);
+        lw.setItems(userNames);          
+    }
+    
+    public void clearUserNames() {
+        userNames.clear(); 
+        lw.setItems(userNames);          
+    }
+    
+    public void setStatusBarText(String text) {
+        statusBar.setText(text);
     }
 }
