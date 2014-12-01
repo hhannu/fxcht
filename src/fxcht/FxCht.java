@@ -6,6 +6,7 @@
 package fxcht;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -18,6 +19,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -107,7 +109,14 @@ public class FxCht extends Application {
         // Start Client
         else {
             ChatClient client = new ChatClient(ui);
-            client.connect("address", port);
+            client.setUserName(userName);
+            if(!client.connect(address, port)) {
+                JOptionPane.showMessageDialog(null,
+                "Connection to " + address + " failed.",
+                "FxCht",
+                JOptionPane.ERROR_MESSAGE);
+                Platform.exit();
+            }
             ui.setClient(client);
             Thread clientThread = new Thread(client);
             clientThread.setDaemon(true);

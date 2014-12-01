@@ -107,6 +107,24 @@ public class ChatServer implements Runnable {
                 return;
             }
         }
+    } 
+    
+    public void disconnectClient(String name) {        
+        for(ServerClient temp : clients) {
+            if(temp.getUserName().equals(name)) {                              
+                StatusMessage sm = new StatusMessage();
+                sm.setLogOutMessage(true);
+                sm.setData((String)temp.getUserName());
+                clients.remove(temp); 
+                temp.sendMessage(sm);   
+                
+                sm.setLogOutMessage(false);
+                sm.setUserLeft(true);
+                clients.remove(temp);    
+                broadcastMessage(sm, 0);
+                return;
+            }
+        }
     }
     
     public void removeClient(int clientId) {        

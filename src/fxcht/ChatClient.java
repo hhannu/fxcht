@@ -76,11 +76,15 @@ public class ChatClient implements Runnable {
                         if(m instanceof StatusMessage) {
                             StatusMessage sm = (StatusMessage)m;
                             if(sm.isLogOutMessage()) {
+                                ui.setStatusBarText("You have been disconnected");
+                                ui.enableUi(false);
                                 return;
                             }
                             if(sm.isLogInReply()) {
                                 System.out.println("loginreply...");
                                 ui.setUserNames((ArrayList<String>)sm.getData());
+                                ui.setStatusBarText("Connected to " + socket.getInetAddress().getHostName() + 
+                                        " as " + userName);
                             }
                             else if(sm.isUserJoined()) {
                                 System.out.println("userjoined... new user: " + (String)sm.getData());

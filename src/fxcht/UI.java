@@ -180,10 +180,11 @@ public class UI extends VBox implements EventHandler{
         }
         else if(event.getSource().equals(dcButton)) {
             if(selectedIndex != 0) {
-                userNames.remove(selectedIndex);
+                String toRemove = userNames.remove(selectedIndex);
                 selectedIndex = 0;
                 selectedUser = "";
                 lw.getSelectionModel().select(selectedIndex);
+                server.disconnectClient(toRemove);
             }
             // TODO: disconnect user
         }
@@ -199,10 +200,13 @@ public class UI extends VBox implements EventHandler{
         cmsg.setReceiverName(selectedUser);
         cmsg.setMessage(msg);
         if(serverMode){
-            if(cmsg.getReceiverName().equals(""))
+            if(cmsg.getReceiverName().equals("")) {                
+                chat.appendText("\n" + userName + ": " + msg);
                 server.broadcastMessage(cmsg, 0);
-            else
-                server.sendTo(cmsg);
+            }
+            else {
+                server.sendTo(cmsg);                
+            }
         }
         else
             client.sendMessage(cmsg);
@@ -249,5 +253,12 @@ public class UI extends VBox implements EventHandler{
     
     public void setStatusBarText(String text) {
         statusBar.setText(text);
+    }
+    
+    public void enableUi(boolean enabled) {
+        if(!enabled)
+            userNames.clear(); 
+        msgBox.setDisable(enabled);
+        sendButton.setDisable(enabled);
     }
 }
