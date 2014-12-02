@@ -8,17 +8,17 @@ package fxcht;
 import java.io.Serializable;
 
 /**
- *
+ * Status messages for chat application
  * @author hth
  */
 public class StatusMessage extends ChatMessage implements Serializable {
     
-    private boolean logInMessage;
-    private boolean logInReply;
-    private boolean logInStatus;
-    private boolean logOutMessage;
-    private boolean userJoined;
-    private boolean userLeft;
+    private boolean logInMessage;   // First message from client to server
+    private boolean logInReply;     // Reply to previous message
+    private boolean logInStatus;    // Indicates if login to server was succesfull
+    private boolean logOutMessage;  // Sent on disconnect
+    private boolean userJoined;     // Sent when a new user has joined the chat
+    private boolean userLeft;       // Sent when a user has left the chat
     private String passWord;
 
     public boolean isLogInMessage() {

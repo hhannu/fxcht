@@ -73,20 +73,20 @@ public class ServerClient implements Runnable {
             output = new ObjectOutputStream(socket.getOutputStream()); 
             input = new ObjectInputStream(socket.getInputStream());
             
-            while(true) {
+            while(socket.isConnected() && !socket.isClosed()) {
                 ChatMessage m = (ChatMessage)input.readObject();
                 //System.out.println(m.getMessage());               
 
-                // Handle server messages
+                // Handle status messages
                 if(m instanceof StatusMessage) {
                     StatusMessage sm = (StatusMessage)m;
                     if(sm.isLogOutMessage()) {
                         return;
                     }
                     if(sm.isLogInMessage()) {
-                        System.out.println("loginmessage from " + sm.getSenderName());
+                        //System.out.println("loginmessage from " + sm.getSenderName());
                         userName = sm.getSenderName();                        
-                        //TODO: check username on server
+                        //TODO: check if username is already in use
                         server.sendUserNames(id); 
                         Platform.runLater(new Runnable() {
                             @Override
@@ -102,34 +102,39 @@ public class ServerClient implements Runnable {
                         server.broadcastMessage(rm, id);
                     }
                 }
+                // handle regular messages
                 else {
-                    System.out.println(m.getSenderName() +
-                    (m.getReceiverName().equals("") ? "" : "->" + m.getReceiverName()) +
-                    ": " + m.getMessage()); 
-                    
+//                    System.out.println(m.getSenderName() +
+//                    (m.getReceiverName().equals("") ? "" : "->" + m.getReceiverName()) +
+//                    ": " + m.getMessage()); 
+                    // TODO: don't show private messages?
                     Platform.runLater(new Runnable() {
                         @Override
                         public void run() {                                  
                             ui.setMessage(m);
                         }
                     });
+                    // message is to all users
                     if(m.getReceiverName().equals("")) {
-                        System.out.println("serverclient broadcastMessage");
+                        //System.out.println("serverclient broadcastMessage");
                         server.broadcastMessage(m, 0);  
                     }
+                    // private message
                     else
                         server.sendTo(m);
                 }
-            }
-        } catch (IOException | ClassNotFoundException ex) {
-            ex.printStackTrace();  
+            }            
+            output.close();
+            input.close(); 
             server.removeClient(id);
             Platform.runLater(new Runnable() {
                 @Override
                 public void run() {   
                     ui.removeUserName(userName);
                 }
-            });         
+            });  
+        } catch (IOException | ClassNotFoundException ex) {
+            ex.printStackTrace();        
         }        
     }    
     
@@ -137,6 +142,14 @@ public class ServerClient implements Runnable {
         try {
             output.writeObject(cm);
             output.flush();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    public void closeSocket() {
+        try {
+            socket.close();
         } catch (IOException ex) {
             ex.printStackTrace();
         }

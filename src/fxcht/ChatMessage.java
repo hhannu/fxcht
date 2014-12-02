@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- *
+ * Message for the chat application
  * @author hth
  */
 public class ChatMessage implements Serializable {

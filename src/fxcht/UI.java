@@ -48,7 +48,7 @@ public class UI extends VBox implements EventHandler{
     private ListView lw = new ListView();
     private MenuBar mBar;
     private Menu fileMenu, helpMenu;
-    private MenuItem closeItem, clearItem, aboutItem;    
+    private MenuItem closeItem, dcItem, clearItem, aboutItem;    
     
     private Button closeButton;        
     private Button sendButton;       
@@ -145,7 +145,9 @@ public class UI extends VBox implements EventHandler{
         mBar = new MenuBar();
         fileMenu = new Menu("File");
         helpMenu = new Menu("Help");
-        closeItem = new MenuItem("Close");
+        dcItem = new MenuItem("Disconnect");
+        dcItem.setOnAction(this);
+        closeItem = new MenuItem("Exit");
         closeItem.setOnAction(this);
         clearItem = new MenuItem("Clear chat");
         clearItem.setOnAction(this);
@@ -158,6 +160,8 @@ public class UI extends VBox implements EventHandler{
                 "About FXAddressBook", JOptionPane.INFORMATION_MESSAGE);
             }
         });
+        if(!this.serverMode)
+            fileMenu.getItems().add(dcItem);
         fileMenu.getItems().add(clearItem);
         fileMenu.getItems().add(closeItem);
         helpMenu.getItems().add(aboutItem);
@@ -171,6 +175,11 @@ public class UI extends VBox implements EventHandler{
             String msg = message.getText();
             if(!msg.equals(""))
                 sendMessage(msg);
+        }
+        else if(event.getSource().equals(dcItem)) {
+            enableUi(false);
+            client.closeSocket();
+            setStatusBarText("Disconnected");
         }
         else if(event.getSource().equals(closeItem)) {
             Platform.exit();

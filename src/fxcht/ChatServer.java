@@ -73,6 +73,11 @@ public class ChatServer implements Runnable {
         }
     }   
     
+    /**
+     * Send a message to all users
+     * @param cm        Message
+     * @param excludeId Client Id to exclude from broadcast
+     */
     public void broadcastMessage(ChatMessage cm, int excludeId) {
         for(ServerClient temp : clients) {
             if(temp.getId() != excludeId && temp.getId() != 0)
@@ -80,6 +85,10 @@ public class ChatServer implements Runnable {
         }
     }
     
+    /**
+     * Send a list of usernames to a specified client id
+     * @param clientId 
+     */
     public void sendUserNames(int clientId) {
         ArrayList<String> users = new ArrayList();
         ServerClient client = null;
@@ -95,6 +104,10 @@ public class ChatServer implements Runnable {
         client.sendMessage(sm);
     }
     
+    /**
+     * Send a message to a specified client.
+     * @param m 
+     */
     public void sendTo(ChatMessage m) {
         String receiver = m.getReceiverName();
         if(receiver.equals(userName)) {
@@ -109,6 +122,10 @@ public class ChatServer implements Runnable {
         }
     } 
     
+    /**
+     * Disconnect and remove a client
+     * @param name 
+     */
     public void disconnectClient(String name) {        
         for(ServerClient temp : clients) {
             if(temp.getUserName().equals(name)) {                              
@@ -127,6 +144,10 @@ public class ChatServer implements Runnable {
         }
     }
     
+    /**
+     * Remove a client
+     * @param clientId 
+     */
     public void removeClient(int clientId) {        
         for(ServerClient temp : clients) {
             if(temp.getId() == clientId) {                              
